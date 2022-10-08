@@ -2,6 +2,16 @@
 #include<iostream>
 #include<string>
 #include<math.h>
+#include<iomanip>
+
+
+double null(double isk) {
+	if (isk == -0) {
+		isk = 0;
+		return isk;
+	}
+	return isk;
+}
 std::vector<std::vector<double>> input(std::string rezult, std::vector<std::vector<double>>& A, std::vector<double>& c,
 	std::vector<double>& b, std::vector<std::string>& sign) {
 	std::vector<std::vector<double>> A_test(A.size());
@@ -31,12 +41,12 @@ std::vector<std::vector<double>> input(std::string rezult, std::vector<std::vect
 	std::cout << "---Initial condition---\n";
 	for (size_t i = 0; i < A.size(); ++i) {
 		for (size_t j = 0; j < abs(max) - 1; ++j) {
-			std::cout << A[i][j] << "x" << j + 1 << " + ";
+			std::cout << A[i][j] << "y" << j + 1 << " + ";
 		}
-		std::cout << A[i][A[i].size() - 1] << "y" << A.size() << sign[i] << b[i];
+		std::cout << A[i][A[i].size() - 1] << "y" << A.size() << " " << sign[i] << " " << b[i];
 		std::cout << '\n';
 	}
-	std::cout << "-----------------------\n";
+	std::cout << "\n";
 	std::cout << "-----canonical form----\n";
 	int ch = 1;
 	for (size_t i = 0; i < A.size(); ++i) {
@@ -51,17 +61,32 @@ std::vector<std::vector<double>> input(std::string rezult, std::vector<std::vect
 	}
 	max++;
 	for (size_t i = 0; i < A.size(); ++i) {
-		for (size_t j = 0; j < abs(max) - 1; ++j) {
-			std::cout << A[i][j] << "x" << j + 1 << " + ";
+		if (A[i][0] < 0) {
+			std::cout << " - " << -1 * A[i][0] << "y" << 1;
 		}
-		std::cout << A[i][A[i].size() - 1] << "y" << A.size() + i + 1 << sign[i] << b[i];
+		else {
+			std::cout << A[i][0] << "y" << 1;
+		}
+		for (size_t j = 1; j < abs(max) - 1; ++j) {
+			if (A[i][j] < 0) {
+				std::cout << " - " << -1 * A[i][j] << "y" << j + 1;
+			}
+			else {
+				std::cout << " + " << A[i][j] << "y" << j + 1;
+			}
+		}
+		if (A[i][A[i].size() - 1] < 0) {
+			std::cout << " - " << -1 * A[i][A[i].size() - 1] << "y" << A.size() + i + 1 << " " << sign[i] << " " << b[i];
+		}
+		else {
+			std::cout << " + "<<A[i][A[i].size() - 1] << "y" << A.size() + i + 1 <<  " " << sign[i] << " " << b[i];
+		}
 		std::cout << '\n';
 	}
 	std::cout << "-----------------------\n";
 	for (size_t i = 0; i < A.size(); ++i) {
 		std::swap(A[i][0], A[i][max - 1]);
 	}
-	std::cout << "-----------------------\n";
 	bool t = false;
 	for (size_t i = 0; i < A.size(); ++i) {
 		if (A[i][0] < 0) {
@@ -73,21 +98,47 @@ std::vector<std::vector<double>> input(std::string rezult, std::vector<std::vect
 		else {
 			std::cout << A[i][0] << "y" << A.size() + i + 1 << " " << sign[i] << " ";
 		}
-		for (size_t j = 1; j < abs(max) - 1; ++j) {
+
+		A[i][1] = null(A[i][1]);
+		if (t) {
+			if (A[i][1] < 0) {
+				std::cout << " + " << -1 * A[i][1] << "y" << 1 + 1;
+			}
+			else if (A[i][1] > 0) {
+				std::cout << " - " << A[i][1] << "y" << 1 + 1;
+			}
+			else if (A[i][1] == 0) {
+				std::cout << "   " << A[i][1] << "y" << 1 + 1;
+			}
+		}
+		else {
+			if (A[i][1] < 0) {
+				std::cout << " + " << -1 * A[i][1] << "y" << 1 + 1;
+			}
+			else if (A[i][1] > 0) {
+				std::cout << " - " << A[i][1] << "y" << 1 + 1;
+			}
+			else if (A[i][1] == 0) {
+				std::cout << A[i][1] << "y" << 1 + 1;
+			}
+		}
+
+		for (size_t j = 2; j < abs(max) - 1; ++j) {
+			A[i][j] = null(A[i][j]);
 			if (t) {
-				if (A[i][j] >= 0) {
-					std::cout << " + " << A[i][j] << "y" << j + 1;
+				if (A[i][j] < 0) {
+					std::cout << " + " << -1 * A[i][j] << "y" << j + 1;
 				}
-				else {
-					std::cout << " " << -1 * A[i][j] << "y" << j + 1;
+				else if(A[i][j] >= 0) {
+					std::cout << " - " << A[i][j] << "y" << j + 1;
 				}
 			}
 			else {
-				if (A[i][j] <= 0) {
-					std::cout << " + " << A[i][j] << "y" << j + 1;
+				if (A[i][j] < 0) {
+					std::cout << " + " << -1 * A[i][j] << "y" << j + 1;
 				}
-				else {
-					std::cout << " " << -1 * A[i][j] << "y" << j + 1;
+				else if (A[i][j] >= 0) {
+					std::cout << " - " << A[i][j] << "y" << j + 1;
 				}
 			}
 
@@ -103,7 +154,7 @@ std::vector<std::vector<double>> input(std::string rezult, std::vector<std::vect
 				std::cout << " + " << -1 * b[i];
 			}
 			else {
-				std::cout << " " << -1 * b[i];
+				std::cout << " - " << b[i];
 			}
 			A_test[i][A[i].size() - 1] = -1 * b[i];
 		}
@@ -119,7 +170,7 @@ std::vector<std::vector<double>> input(std::string rezult, std::vector<std::vect
 			}
 			else {
 				if (b[i] < 0) {
-					std::cout << b[i];
+					std::cout << " - " << -1 * b[i];
 				}
 			}
 			A_test[i][A[i].size() - 1] = b[i];
@@ -175,18 +226,18 @@ std::vector<std::vector<double>> input(std::string rezult, std::vector<std::vect
 }
 void printer(std::vector<std::vector<double>>& matr, const std::vector<std::string>& basis,
 	const std::vector<std::string>& free) {
-	std::cout << "\n\n\n\t";
+	std::cout << "\n\n\n\t ";
 	for (size_t i = 0; i < free.size(); ++i) {
-		std::cout << free[i] << "	";
+		std::cout << free[i] << "	 ";
 	}
 	std::cout << "\n";
 	for (size_t i = 0; i < basis.size(); ++i) {
-		std::cout << basis[i] << "	";
+		std::cout << basis[i] <<"	";
 		for (size_t j = 0; j < matr[i].size(); ++j) {
 			if (matr[i][j] == -0) {
 				matr[i][j] = 0;
 			}
-			std::cout << round(matr[i][j] * 100) / 100 << "	";
+			std::cout << std::setw(5) <<std::fixed << std::setprecision(2) << round(matr[i][j] * 100) / 100 << std::right  << "\t";
 		}
 		std::cout << "\n";
 	}
@@ -207,8 +258,11 @@ int find_row(std::vector<std::vector<double>>& sympl, int index_r_column) {
 	int index_r_row = -1;
 	double min = INT64_MAX;
 	for (size_t i = 0; i < sympl.size(); ++i) {
+		if (sympl[i][0] >= 0 && sympl[i][index_r_column] < 0) {
+			continue;
+		}
 		double znach = sympl[i][0] / sympl[i][index_r_column];
-		if (znach > 0 && znach < min) {
+		if (znach >= 0 && znach < min) {
 			min = znach;
 			index_r_row = i;
 		}
@@ -245,19 +299,16 @@ void searher(std::vector<std::vector<double>>& matr, std::vector<std::string>& f
 	for (size_t i = 0; i < matr.size() - 1; ++i) {
 		if (matr[i][0] < 0) {
 			bool otr = false;
-			double min_modul = LONG_MIN;
-			size_t index_r_raw;
 			for (size_t j = 1; j < matr[i].size(); ++j) {
-				if (matr[i][j] < 0 && matr[i][j] > min_modul) {
+				if (matr[i][j] < 0) {
 					index_r_column = j;
-					min_modul = matr[i][j];
-					std::cout << "--------------" << index_r_column << "--------------\n";
-					std::cout << "--------------" << i << "--------------\n";
+					size_t index_r_raw = find_row(matr, index_r_column);
+					std::swap(free[index_r_column], basis[index_r_raw]);
+					transformation(matr, index_r_raw, index_r_column);
 					otr = true;
+					break;
 				}
 			}
-			std::swap(free[index_r_column], basis[i]);
-			transformation(matr, i, index_r_column);
 			if (otr) {
 				printer(matr, basis, free);
 				i = 0;
@@ -273,10 +324,10 @@ void searher(std::vector<std::vector<double>>& matr, std::vector<std::string>& f
 void printer_answer(std::string rezult, std::vector<std::vector<double>>& matr, std::vector<std::string>& free, std::vector<std::string>& basis) {
 	std::cout << "\n\n\n---------ANSWER--------\n";
 	if (rezult == "max") {
-		std::cout << "F = " << round(-1 * matr[matr.size() - 1][0] * 100) / 100 << std::endl;
+		std::cout << "F  = " << round(-1 * matr[matr.size() - 1][0] * 100) / 100 << std::endl;
 	}
 	else {
-		std::cout << "F = " << round(matr[matr.size() - 1][0] * 100) / 100 << std::endl;
+		std::cout << "F  = " << round(matr[matr.size() - 1][0] * 100) / 100 << std::endl;
 
 	}
 	for (size_t i = 0; i < matr.size() - 1; ++i) {
@@ -287,6 +338,19 @@ void printer_answer(std::string rezult, std::vector<std::vector<double>>& matr, 
 	}
 }
 
+bool checking(std::vector<std::vector<double>>& matr, std::vector<std::vector<double>>& A, std::vector<double>& c,
+	std::vector<double>& b, std::vector<std::string>& sign) {
+	bool sign_chek;
+	for (size_t i = 0; i < sign.size(); ++i) {
+		if (sign[i] == "<=") {
+			sign_chek = true;
+		}
+		if (sign[i] == ">=") {
+			sign_chek = false;
+		}
+	}
+	return sign_chek;
+}
 void method(std::vector<std::vector<double>>& matr, std::string rezult) {
 	std::vector<std::string> basis(matr.size());
 	std::vector<std::string> free(matr[0].size());
