@@ -226,7 +226,7 @@ std::vector<std::vector<double>> input(std::string rezult, std::vector<std::vect
 }
 void printer(std::vector<std::vector<double>>& matr, const std::vector<std::string>& basis,
 	const std::vector<std::string>& free) {
-	std::cout << "\n\n\n\t ";
+	std::cout << "\n\n\t ";
 	for (size_t i = 0; i < free.size(); ++i) {
 		std::cout << free[i] << "	 ";
 	}
@@ -257,7 +257,7 @@ int find_column(std::vector<double>& F) {
 int find_row(std::vector<std::vector<double>>& sympl, int index_r_column) {
 	int index_r_row = -1;
 	double min = INT64_MAX;
-	for (size_t i = 0; i < sympl.size(); ++i) {
+	for (size_t i = 0; i < sympl.size() -1; ++i) {
 		if (sympl[i][0] >= 0 && sympl[i][index_r_column] < 0) {
 			continue;
 		}
@@ -340,16 +340,43 @@ void printer_answer(std::string rezult, std::vector<std::vector<double>>& matr, 
 
 bool checking(std::vector<std::vector<double>>& matr, std::vector<std::vector<double>>& A, std::vector<double>& c,
 	std::vector<double>& b, std::vector<std::string>& sign) {
-	bool sign_chek;
-	for (size_t i = 0; i < sign.size(); ++i) {
-		if (sign[i] == "<=") {
-			sign_chek = true;
-		}
-		if (sign[i] == ">=") {
-			sign_chek = false;
+	bool answer = false;
+	bool sign_chek = false;
+	double function = 0;
+	double limit = 0;
+	for (size_t i = 0; i < A.size() - 1; ++i) {
+		function += matr[i][0];
+	}
+	std::vector<double> ans(A.size());
+	for (size_t i = 0; i < A.size(); ++i) {
+		ans[i] = matr[i][0];
+	}
+	if (function == matr[A.size() - 1][0]) {
+		answer = true;
+		for (size_t i = 0; i < A.size(); ++i) {
+			if (sign[i] == "<=") {
+				sign_chek = true;
+			}
+			if (sign[i] == ">=") {
+				sign_chek = false;
+			}
+			for (size_t j = 0; j < A[i].size(); ++j) {
+				limit += A[i][j] * ans[i];
+			}
+			if (sign_chek == true) {
+				if (limit > b[i]) {
+					answer = false;
+				}
+				else if (sign_chek == false) {
+					if (limit < b[i]) {
+						answer = false;
+					}
+				}
+			}
+			limit = 0;
 		}
 	}
-	return sign_chek;
+	return answer;
 }
 void method(std::vector<std::vector<double>>& matr, std::string rezult) {
 	std::vector<std::string> basis(matr.size());
@@ -389,56 +416,72 @@ int main() {
 	std::vector<double> b = { 5,3,8 };
 	std::vector<std::string> sign = { "<=", "<=","<=" };
 	std::string rezult = "max";
-	/////
-	std::vector<double> new_b(c.size());
-	std::vector<double> new_c(b.size());
-	for (size_t i = 0; i < c.size(); ++i) {
-		new_b[i] = c[i];
-	}
-	for (size_t i = 0; i < b.size(); ++i) {
-		new_c[i] = b[i];
-	}
-	if (rezult == "max") {
-		rezult = "min";
-	}
-	else if (rezult == "min") {
-		rezult = "max";
-	}
-	for (size_t i = 0; i < sign.size(); ++i) {
-		if (sign[i] == "<=") {
-			sign[i] = ">=";
+	bool dual = true;
+	if (dual) {
+		std::vector<double> new_b(c.size());
+		std::vector<double> new_c(b.size());
+		for (size_t i = 0; i < c.size(); ++i) {
+			new_b[i] = c[i];
 		}
-		else {
-			if (sign[i] == "<") {
-				sign[i] == ">";
+		for (size_t i = 0; i < b.size(); ++i) {
+			new_c[i] = b[i];
+		}
+		if (rezult == "max") {
+			rezult = "min";
+		}
+		else if (rezult == "min") {
+			rezult = "max";
+		}
+		for (size_t i = 0; i < sign.size(); ++i) {
+			if (sign[i] == "<=") {
+				sign[i] = ">=";
 			}
 			else {
-				if (sign[i] == ">=") {
-					sign[i] = "<=";
+				if (sign[i] == "<") {
+					sign[i] == ">";
 				}
 				else {
-					if (sign[i] == ">") {
-						sign[i] == "<";
+					if (sign[i] == ">=") {
+						sign[i] = "<=";
+					}
+					else {
+						if (sign[i] == ">") {
+							sign[i] == "<";
+						}
 					}
 				}
 			}
 		}
-	}
-	std::vector<std::vector<double>> trans_A(A[0].size());
-	for (size_t i = 0; i < A[0].size(); ++i) {
-		trans_A[i].resize(A.size());
-		for (size_t j = 0; j < A.size(); ++j) {
-			trans_A[i][j] = A[j][i];
+		std::vector<std::vector<double>> trans_A(A[0].size());
+		for (size_t i = 0; i < A[0].size(); ++i) {
+			trans_A[i].resize(A.size());
+			for (size_t j = 0; j < A.size(); ++j) {
+				trans_A[i][j] = A[j][i];
+			}
 		}
-	}
-	///////////
-	x = input(rezult, trans_A, new_c, new_b, sign);
-	for (size_t i = 0; i < x.size(); ++i) {
-		for (size_t j = 0; j < x[0].size(); ++j) {
-			std::cout << x[i][j] << " ";
+		x = input(rezult, trans_A, new_c, new_b, sign);
+		method(x, rezult);
+		std::cout << "--------CHECKING--------\n";
+		if (checking(x, A, c, b, sign) == 1) {
+			std::cout << "Verification completed successfully!!!";
 		}
-		std::cout << '\n';
+		else {
+			std::cout << "Incorrect operation of the program";
+		}
+		return 0;
+
 	}
-	method(x, rezult);
-	return 0;
+	else {
+		x = input(rezult, A, c, b, sign);
+		method(x, rezult);
+		std::cout << "--------CHECKING--------\n";
+		if (checking(x, A, c, b, sign) == 0) {
+			std::cout << "Verification completed successfully!!!";
+		}
+		else {
+			std::cout << "Incorrect operation of the program";
+		}
+		return 0;
+
+	}
 }
